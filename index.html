@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Acceso BUPC</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    /* --- DISEÑO PROFESIONAL BUPC V2 --- */
+    :root {
+        --ucol-azul: #003366;
+        --ucol-verde: #006747;
+        --ucol-naranja: #ff8c00;
+    }
+
+    body { 
+        background: #f0f2f5; /* Fondo gris suave moderno */
+        background-image: linear-gradient(135deg, #f0f2f5 0%, #d9e2ec 100%);
+        font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; 
+        height: 100vh; /* Altura completa de pantalla */
+        margin: 0;
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+    }
+    
+    .tarjeta-acceso {
+      background: #ffffff;
+      width: 90%; /* Un poco más ancha en móviles */
+      max-width: 420px;
+      padding: 40px 30px; /* Más espacio interno */
+      border-radius: 24px; /* Bordes más redondeados */
+      /* Sombra más suave y moderna */
+      box-shadow: 0 20px 60px rgba(0, 51, 102, 0.1), 0 10px 20px rgba(0,0,0,0.05);
+      text-align: center; 
+      position: relative; 
+      overflow: hidden;
+      border-top: none; /* Quitamos el borde verde superior para un look más limpio */
+    }
+
+    /* Barra superior de color institucional */
+    .tarjeta-acceso::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0;
+        height: 12px; background: linear-gradient(90deg, var(--ucol-azul) 60%, var(--ucol-verde) 100%);
+    }
+
+    h1 { color: var(--ucol-azul); font-weight: 900; font-size: 2rem; margin: 15px 0 5px 0; letter-spacing: -0.5px; }
+    p.subtitulo { color: #667788; font-size: 1.1rem; font-weight: 500; margin-bottom: 30px; }
+    
+    .estado-badge {
+      background: #eef2f7; color: var(--ucol-azul); 
+      padding: 8px 16px; border-radius: 50px; font-size: 0.85rem; 
+      font-weight: 700; letter-spacing: 1px; text-transform: uppercase; display: inline-block;
+    }
+
+    .icono-central { font-size: 5rem; color: var(--ucol-naranja); filter: drop-shadow(0 10px 15px rgba(255,140,0,0.3)); }
+
+    .btn-bupc {
+      background: var(--ucol-azul); color: white; border: none; 
+      padding: 20px; font-size: 1.3rem; font-weight: 800; 
+      border-radius: 16px; width: 100%; letter-spacing: 0.5px;
+      box-shadow: 0 10px 25px rgba(0, 51, 102, 0.3);
+      transition: all 0.3s ease; cursor: pointer;
+    }
+    .btn-bupc:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0, 51, 102, 0.4); background: #004080; }
+    .btn-bupc:active { transform: scale(0.98); background-color: #002244; }
+
+    /* Animaciones */
+    #pantalla-exito, #pantalla-carga { 
+        display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(255,255,255,0.98); /* Fondo casi blanco puro */
+        z-index: 10; flex-direction: column; align-items: center; justify-content: center; 
+        border-radius: 24px; 
+        animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <div class="tarjeta-acceso">
+    <div id="pantalla-login" style="display: none;">
+      <h1 class="mb-4">IDENTIFÍCATE</h1>
+      <p class="subtitulo">Ingresa tu ID Institucional</p>
+      
+      <div class="mb-4">
+        <input type="text" id="input-id-login" class="form-control text-center" 
+               placeholder="ejemplo@ucol.mx" 
+               style="font-size: 1.2rem; padding: 15px; border: 2px solid #003366; border-radius: 12px;">
+      </div>
+
+      <button onclick="verificarUsuarioOnline()" class="btn-bupc">
+        BUSCAR MI CUENTA
+      </button>
+    </div>
+    <div id="pantalla-inicio" style="display: none;">
+      <div class="estado-badge">SISTEMA DE ASISTENCIA</div>
+      
+      <h1 id="nombre-usuario">...</h1>
+      <a href="#" onclick="cerrarSesion()" style="color: #666; font-size: 0.9rem; text-decoration: underline;">
+        ¿No eres tú? Cambiar cuenta
+      </a>
+      <p class="subtitulo">Bienvenido a la</p>
+      <p class="subtitulo">Brigada Universitaria de Protección Civil</p>
+      <div class="my-4">
+        <div class="mb-3">
+            <i class="bi bi-fingerprint" style="font-size: 4rem; color: #ff8c00;"></i>
+        </div>
+
+      <div class="my-4">
+        <label style="font-weight: bold; color: #003366; margin-bottom: 5px;">CLAVE DE ACCESO</label>
+        <input type="text" id="input-pin" class="form-control text-center" 
+               placeholder="****" maxlength="4" inputmode="numeric"
+               style="font-size: 2rem; letter-spacing: 8px; border: 2px solid #ff8c00; color: #003366; font-weight: bold;">
+      </div>
+
+      <button onclick="registrarAsistencia()" class="btn-bupc">
+        CONFIRMAR REGISTRO
+      </button>
+      
+      <div class="mt-3 text-muted" style="font-size: 0.8rem;">
+        ID de Sesión: <span id="id-debug">...</span>
+      </div>
+    </div>
+
+    <div id="pantalla-carga">
+      <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
+      <h4 class="mt-3">Conectando...</h4>
+    </div>
+
+    <div id="pantalla-exito">
+      <i class="bi bi-check-circle-fill" style="font-size: 5rem; color: #28a745;"></i>
+      <h2 class="text-success mt-3">¡LISTO!</h2>
+      <p id="mensaje-servidor" class="px-4">Registro guardado</p>
+      <button onclick="location.reload()" class="btn btn-outline-secondary mt-3">Cerrar</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <script>
+    // --- CONFIGURACIÓN ---
+    // ¡PEGA TU URL DE APPS SCRIPT AQUÍ ABAJO!
+    const API_URL = "https://script.google.com/macros/s/AKfycbw4d50w3KdCuW8kNspRE1337AQX6AykB5pm-wALWV-axte38QCLVx0TBTJB6-arfZpc5w/exec";
+    const PIN_DEL_DIA = "2026"; // <--- ¡AQUÍ CAMBIAS LA CLAVE CADA MAÑANA!
+    
+    // --- LÓGICA ---
+    const params = new URLSearchParams(window.location.search);
+    // Buscamos el usuario en la URL o en la memoria del teléfono
+    let userId = params.get('u') || localStorage.getItem('bupc_user_id');
+
+    // Inicialización
+// --- LÓGICA DE NAVEGACIÓN ---
+    window.onload = function() {
+      // 1. ¿Ya tenemos usuario? (Por URL o Memoria)
+      if (userId) {
+        // SI YA HAY USUARIO -> Mostramos la pantalla del PIN (La de siempre)
+        localStorage.setItem('bupc_user_id', userId);
+        mostrarPantalla('pantalla-inicio');
+        
+        let nombre = userId.split('@')[0].replace(/\./g, ' ').toUpperCase();
+        document.getElementById('nombre-usuario').innerText = nombre;
+        document.getElementById('id-debug').innerText = userId;
+      } else {
+        // SI NO HAY USUARIO -> Mostramos la pantalla de Login
+        mostrarPantalla('pantalla-login');
+      }
+    };
+
+    // Función auxiliar para cambiar de pantallas fácil
+    function mostrarPantalla(idPantalla) {
+      document.getElementById('pantalla-login').style.display = 'none';
+      document.getElementById('pantalla-inicio').style.display = 'none';
+      document.getElementById(idPantalla).style.display = 'block';
+    }
+
+    // --- NUEVA FUNCIÓN: VERIFICAR EN LA BASE DE DATOS ---
+    function verificarUsuarioOnline() {
+      const idIngresado = document.getElementById('input-id-login').value.trim();
+      
+      if (!idIngresado) return alert("Escribe tu ID por favor.");
+
+      document.getElementById('pantalla-carga').style.display = 'flex'; // Usamos tu pantalla de carga existente
+
+      // Preguntamos al Servidor: "¿Existe este usuario?"
+      fetch(`${API_URL}?action=validate&u=${idIngresado}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === "success") {
+            // ¡SI EXISTE! -> Recargamos la página con su ID en la URL
+            // Esto activará automáticamente la pantalla del PIN
+            window.location.href = `?u=${idIngresado}`;
+          } else {
+            document.getElementById('pantalla-carga').style.display = 'none';
+            alert("❌ " + data.mensaje + "\nRevisa que tu ID esté bien escrito.");
+          }
+        })
+        .catch(error => {
+          document.getElementById('pantalla-carga').style.display = 'none';
+          alert("Error de conexión con la base de datos.");
+        });
+    }
+
+      function cerrarSesion() {
+        localStorage.removeItem('bupc_user_id'); // Borramos el tatuaje de la memoria
+        window.location.href = window.location.pathname; // Recargamos la página limpia (sin ?u=...)
+      }
+
+    function registrarAsistencia() {
+      // 1. Validar Usuario
+      if (!userId) return alert("Error: No hay usuario identificado");
+
+      // 2. Validar PIN (NUEVO CÓDIGO)
+      const pinEscrito = document.getElementById('input-pin').value; // Leemos lo que escribieron
+      
+      if (pinEscrito !== PIN_DEL_DIA) { // Comparamos: ¿Es diferente a la clave correcta?
+        alert("⛔ CLAVE INCORRECTA\nPor favor, solicita la clave del día a tu coordinador.");
+        document.getElementById('input-pin').value = ""; // Borramos lo que escribió para que intente de nuevo
+        document.getElementById('input-pin').focus(); // Ponemos el cursor ahí otra vez
+        return; // ¡ALTO! Aquí se detiene todo. No se envía nada al Excel.
+      }
+
+      // Si pasó el filtro, seguimos con el registro...
+      document.getElementById('pantalla-carga').style.display = 'flex';
+      
+      // ... (El resto del código fetch sigue igual)
+
+      // ENVIAR DATOS A GOOGLE (SIN USAR GOOGLE SCRIPTS API)
+      const urlFinal = `${API_URL}?action=checkin&u=${userId}`;
+
+      fetch(urlFinal)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('pantalla-carga').style.display = 'none';
+          
+          if(data.status === "success") {
+            document.getElementById('pantalla-exito').style.display = 'flex';
+            document.getElementById('mensaje-servidor').innerText = data.mensaje;
+            confetti({ particleCount: 150, spread: 70 });
+          } else {
+            alert("Error: " + data.mensaje);
+          }
+        })
+        .catch(error => {
+          document.getElementById('pantalla-carga').style.display = 'none';
+          alert("Error de conexión. Intenta de nuevo.");
+          console.error(error);
+        });
+    }
+  </script>
+</body>
+</html>
