@@ -15,15 +15,40 @@
         --ucol-naranja: #ff8c00;
     }
 
+/* --- EL NUEVO BODY CON MARCA DE AGUA --- */
     body { 
-        background: #f0f2f5; /* Fondo gris suave moderno */
-        background-image: linear-gradient(135deg, #f0f2f5 0%, #d9e2ec 100%);
         font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; 
-        height: 100vh; /* Altura completa de pantalla */
+        height: 100vh; /* Altura completa */
         margin: 0;
         display: flex; 
         align-items: center; 
-        justify-content: center; 
+        justify-content: center;
+        position: relative; /* Necesario para el truco de la imagen */
+        overflow: hidden; /* Evita barras de desplazamiento si el logo es muy grande */
+        background-color: #f0f2f5; /* Color base por si la imagen no carga */
+    }
+
+    /* LA CAPA FANTASMA (El Logo de fondo) */
+    body::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        /* AQUÍ VA TU IMAGEN - Revisa que el nombre sea exacto */
+        background-image: url('LOGOweb.png'); 
+        background-position: center center;
+        background-repeat: no-repeat;
+        /* 'contain' muestra el logo entero. 'cover' llena toda la pantalla pero puede cortar bordes */
+        background-size: contain; 
+        
+        /* --- CONTROL DE TRANSPARENCIA --- */
+        /* 0.0 = invisible | 1.0 = totalmente visible */
+        /* Juega con este número: 0.1 es muy sutil, 0.2 se nota más */
+        opacity: 0.12; 
+        
+        z-index: -1; /* Esto asegura que se quede DETRÁS de la tarjeta blanca */
+        
+        /* OPCIONAL: Si quieres que el logo se vea en escala de grises (más elegante) descomenta esto: */
+        /* filter: grayscale(100%); */
     }
     
     .tarjeta-acceso {
@@ -87,11 +112,11 @@
       
       <div class="mb-4">
         <input type="text" id="input-id-login" class="form-control text-center" 
-               placeholder="ejemplo@ucol.mx" 
+               placeholder="ejemplo@BUPC.ucol" 
                style="font-size: 1.2rem; padding: 15px; border: 2px solid #003366; border-radius: 12px;">
       </div>
 
-      <button onclick="verificarUsuarioOnline()" class="btn-bupc">
+      <button id="btn-busqueda" onclick="verificarUsuarioOnline()" class="btn-bupc">
         BUSCAR MI CUENTA
       </button>
     </div>
@@ -116,7 +141,7 @@
                style="font-size: 2rem; letter-spacing: 8px; border: 2px solid #ff8c00; color: #003366; font-weight: bold;">
       </div>
 
-      <button onclick="registrarAsistencia()" class="btn-bupc">
+      <button id="btn-registro" onclick="registrarAsistencia()" class="btn-bupc">
         CONFIRMAR REGISTRO
       </button>
       
@@ -175,58 +200,27 @@
       document.getElementById(idPantalla).style.display = 'block';
     }
 
-    // --- NUEVA FUNCIÓN: VERIFICAR EN LA BASE DE DATOS ---
-    function verificarUsuarioOnline() {
-      const idIngresado = document.getElementById('input-id-login').value.trim();
-      
-      if (!idIngresado) return alert("Escribe tu ID por favor.");
-
-      document.getElementById('pantalla-carga').style.display = 'flex'; // Usamos tu pantalla de carga existente
-
-      // Preguntamos al Servidor: "¿Existe este usuario?"
-      fetch(`${API_URL}?action=validate&u=${idIngresado}`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === "success") {
-            // ¡SI EXISTE! -> Recargamos la página con su ID en la URL
-            // Esto activará automáticamente la pantalla del PIN
-            window.location.href = `?u=${idIngresado}`;
-          } else {
-            document.getElementById('pantalla-carga').style.display = 'none';
-            alert("❌ " + data.mensaje + "\nRevisa que tu ID esté bien escrito.");
-          }
-        })
-        .catch(error => {
-          document.getElementById('pantalla-carga').style.display = 'none';
-          alert("Error de conexión con la base de datos.");
-        });
-    }
-
-      function cerrarSesion() {
-        localStorage.removeItem('bupc_user_id'); // Borramos el tatuaje de la memoria
-        window.location.href = window.location.pathname; // Recargamos la página limpia (sin ?u=...)
-      }
-
+// --- FUNCIÓN BLINDADA: REGISTRO ---
     function registrarAsistencia() {
-      // 1. Validar Usuario
       if (!userId) return alert("Error: No hay usuario identificado");
 
-      // 2. Validar PIN (NUEVO CÓDIGO)
-      const pinEscrito = document.getElementById('input-pin').value; // Leemos lo que escribieron
-      
-      if (pinEscrito !== PIN_DEL_DIA) { // Comparamos: ¿Es diferente a la clave correcta?
-        alert("⛔ CLAVE INCORRECTA\nPor favor, solicita la clave del día a tu coordinador.");
-        document.getElementById('input-pin').value = ""; // Borramos lo que escribió para que intente de nuevo
-        document.getElementById('input-pin').focus(); // Ponemos el cursor ahí otra vez
-        return; // ¡ALTO! Aquí se detiene todo. No se envía nada al Excel.
+      // 1. Validar PIN
+      const pinEscrito = document.getElementById('input-pin').value;
+      if (pinEscrito !== PIN_DEL_DIA) {
+        alert("⛔ CLAVE INCORRECTA\nSolicita la clave del día.");
+        document.getElementById('input-pin').value = "";
+        return;
       }
 
-      // Si pasó el filtro, seguimos con el registro...
-      document.getElementById('pantalla-carga').style.display = 'flex';
-      
-      // ... (El resto del código fetch sigue igual)
+      // 2. BLOQUEO TOTAL (Anti-Dedo Rápido)
+      const btn = document.getElementById('btn-registro');
+      btn.disabled = true; // Desactivamos el clic
+      btn.innerText = "REGISTRANDO..."; // Feedback visual
+      btn.style.opacity = "0.7"; // Se ve un poco transparente
 
-      // ENVIAR DATOS A GOOGLE (SIN USAR GOOGLE SCRIPTS API)
+      document.getElementById('pantalla-carga').style.display = 'flex';
+
+      // 3. Enviar
       const urlFinal = `${API_URL}?action=checkin&u=${userId}`;
 
       fetch(urlFinal)
@@ -238,18 +232,60 @@
             document.getElementById('pantalla-exito').style.display = 'flex';
             document.getElementById('mensaje-servidor').innerText = data.mensaje;
             confetti({ particleCount: 150, spread: 70 });
+            // NO reactivamos el botón aquí porque ya terminó el proceso con éxito
           } else {
             alert("Error: " + data.mensaje);
+            // Si hubo error, SÍ reactivamos el botón para que intente de nuevo
+            reactivarBoton(btn, "CONFIRMAR REGISTRO");
           }
         })
         .catch(error => {
           document.getElementById('pantalla-carga').style.display = 'none';
           alert("Error de conexión. Intenta de nuevo.");
-          console.error(error);
+          reactivarBoton(btn, "CONFIRMAR REGISTRO");
         });
+    }
+
+    // --- FUNCIÓN BLINDADA: BÚSQUEDA ---
+    function verificarUsuarioOnline() {
+      const idIngresado = document.getElementById('input-id-login').value.trim();
+      if (!idIngresado) return alert("Escribe tu ID por favor.");
+
+      // BLOQUEO TOTAL
+      const btn = document.getElementById('btn-busqueda');
+      btn.disabled = true;
+      btn.innerText = "BUSCANDO...";
+      btn.style.opacity = "0.7";
+
+      document.getElementById('pantalla-carga').style.display = 'flex';
+
+      fetch(`${API_URL}?action=validate&u=${idIngresado}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === "success") {
+            window.location.href = `?u=${idIngresado}`;
+          } else {
+            document.getElementById('pantalla-carga').style.display = 'none';
+            alert("❌ " + data.mensaje);
+            reactivarBoton(btn, "BUSCAR MI CUENTA");
+          }
+        })
+        .catch(error => {
+          document.getElementById('pantalla-carga').style.display = 'none';
+          alert("Error de conexión.");
+          reactivarBoton(btn, "BUSCAR MI CUENTA");
+        });
+    }
+
+    // Pequeña ayuda para reactivar botones si algo falla
+    function reactivarBoton(boton, textoOriginal) {
+        boton.disabled = false;
+        boton.innerText = textoOriginal;
+        boton.style.opacity = "1";
     }
   </script>
 </body>
 
 </html>
+
 
