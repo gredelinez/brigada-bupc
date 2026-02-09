@@ -124,9 +124,11 @@
       <div class="estado-badge">SISTEMA DE ASISTENCIA</div>
       
       <h1 id="nombre-usuario">...</h1>
-      <a href="#" onclick="cerrarSesion()" style="color: #666; font-size: 0.9rem; text-decoration: underline;">
-        ¿No eres tú? Cambiar cuenta
-      </a>
+      <div class="mt-3 text-center">
+        <button onclick="cerrarSesion()" style="background: none; border: none; color: #666; text-decoration: underline; cursor: pointer;">
+          ¿No eres tú? Cambiar cuenta
+        </button>
+      </div>
       <p class="subtitulo">Bienvenido a la</p>
       <p class="subtitulo">Brigada Universitaria de Protección Civil</p>
       <div class="my-4">
@@ -283,10 +285,20 @@
         boton.innerText = textoOriginal;
         boton.style.opacity = "1";
     }
+    // --- FUNCIÓN DE SALIDA MAESTRA ---
+    function cerrarSesion() {
+      // 1. Borrar la memoria del navegador
+      localStorage.removeItem('bupc_user_id');
+      
+      // 2. IMPORTANTE: Limpiar la URL para que no te vuelva a meter
+      // Esto le quita la parte de "?u=..." y deja solo la dirección base
+      window.location.href = window.location.href.split('?')[0];
+    }
   </script>
 </body>
 
 </html>
+
 
 
 
