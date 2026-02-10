@@ -64,6 +64,27 @@
       overflow: hidden;
       border-top: none; /* Quitamos el borde verde superior para un look más limpio */
     }
+  /* --- SELLO DE AGUA INTERNO (El toque estético) --- */
+    .tarjeta-acceso::after {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; 
+        width: 100%; height: 100%;
+        
+        /* TU LOGO AQUÍ */
+        background-image: url('LOGOweb.png'); 
+        
+        /* Configuración para que se vea centrado y bonito */
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: 50%; /* Ajusta este % si lo quieres más grande o chico */
+        
+        /* Transparencia: 0.05 es muy sutil, 0.1 se nota más */
+        opacity: 0.08; 
+        
+        /* TRUCO FINAL: Esto permite dar clic a los botones A TRAVÉS del logo */
+        pointer-events: none; 
+    }
 
     /* Barra superior de color institucional */
     .tarjeta-acceso::before {
@@ -129,7 +150,6 @@
           ¿No eres tú? Cambiar cuenta
         </button>
       </div>
-      <p class="subtitulo">Bienvenido a la</p>
       <p class="subtitulo">Brigada Universitaria de Protección Civil</p>
       <div class="my-4">
         <div class="mb-3">
@@ -298,6 +318,7 @@
 </body>
 
 </html>
+
 
 
 
