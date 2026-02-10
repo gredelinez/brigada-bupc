@@ -120,6 +120,18 @@
         animation: fadeIn 0.3s ease-out;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  /* 1. Definimos la animación de la "luz" */
+    @keyframes pulso-luz {
+      0% { opacity: 1; filter: drop-shadow(0 0 2px rgba(0,0,0,0.2)); }
+      50% { opacity: 0.6; filter: drop-shadow(0 0 8px rgba(0,0,0,0.1)); }
+      100% { opacity: 1; filter: drop-shadow(0 0 2px rgba(0,0,0,0.2)); }
+    }
+
+    /* 2. Se la aplicamos al nombre del usuario */
+    #nombre-usuario {
+      animation: pulso-luz 2s infinite ease-in-out;
+      color: #333; /* Un color sólido para que se vea elegante */
+    }
   </style>
 </head>
 <body>
